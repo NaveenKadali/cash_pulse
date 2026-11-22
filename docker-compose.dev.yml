@@ -1,0 +1,52 @@
+name: cashpulse-dev
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: cashpulse-db-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cashpulse
+      POSTGRES_PASSWORD: cashpulse_secret
+      POSTGRES_DB: cashpulse
+    ports:
+      - "5432:5432"
+    volumes:
+      - cashpulse_pgdata_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cashpulse -d cashpulse"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cashpulse-dev-network
+
+  web:
+    image: node:22-alpine
+    container_name: cashpulse-app-dev
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgres://cashpulse:cashpulse_secret@db:5432/cashpulse
+      FAST2SMS_API_KEY: ${FAST2SMS_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - cashpulse-dev-network
+
+volumes:
+  cashpulse_pgdata_dev:
+
+networks:
+  cashpulse-dev-network:
+    driver: bridge

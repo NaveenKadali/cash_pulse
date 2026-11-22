@@ -426,14 +426,31 @@ export default function Home() {
               <div className="rounded-xl bg-emerald-950/40 border border-emerald-500/30 p-4 text-xs font-mono text-emerald-200 leading-relaxed">
                 {toneMessages[activeTone].text}
               </div>
-              <div className="mt-4 flex items-center justify-between text-xs text-slate-400">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
                 <span>Includes 1-click UPI deep-link &amp; milestone breakdown</span>
-                <Link
-                  href="/app"
-                  className="text-indigo-400 hover:text-indigo-300 font-semibold inline-flex items-center gap-1"
-                >
-                  Try in Live Studio →
-                </Link>
+                <div className="flex flex-wrap items-center gap-2">
+                  <a
+                    href={`https://wa.me/919494899378?text=${encodeURIComponent(toneMessages[activeTone].text)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-xs font-bold transition shadow-md shadow-emerald-600/30 active:scale-95 cursor-pointer"
+                  >
+                    <span>Open in WhatsApp (9494899378)</span>
+                  </a>
+                  <a
+                    href={`whatsapp://send?phone=919494899378&text=${encodeURIComponent(toneMessages[activeTone].text)}`}
+                    className="inline-flex items-center gap-1 rounded-lg border border-emerald-600/40 bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-300 px-2.5 py-1.5 text-xs font-semibold transition"
+                    title="Direct mobile app scheme (whatsapp://)"
+                  >
+                    <span>App Intent</span>
+                  </a>
+                  <Link
+                    href="/app"
+                    className="text-indigo-400 hover:text-indigo-300 font-semibold inline-flex items-center gap-1 ml-1"
+                  >
+                    Try in Live Studio →
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

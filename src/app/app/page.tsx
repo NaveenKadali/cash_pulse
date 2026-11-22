@@ -270,14 +270,18 @@ export default function AppPage() {
     }
   };
 
-  const handleTriggerNudge = async (projectId: string, tone = selectedTone, directOpen = false) => {
+  const handleTriggerNudge = async (projectId: string, tone = selectedTone, directOpen = true) => {
     try {
+      const effectiveTone = tone === 'final' ? 'firm' : tone;
+      setStatusMessage(`Composing ${effectiveTone.toUpperCase()} WhatsApp nudge for client...`);
+
       const res = await fetch(`/api/projects/${projectId}/nudges`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tone,
+          tone: effectiveTone,
           clientPhone: '9494899378',
+          invoiceRef: `INV-${projectId.toUpperCase()}`,
         }),
       });
       const data = await res.json();
@@ -285,7 +289,7 @@ export default function AppPage() {
         setNudgeModal({
           open: true,
           projectId,
-          tone,
+          tone: effectiveTone,
           draft: data.draft.messageText,
           whatsappUrl: data.draft.whatsappUrl,
           whatsappIntentUrl: data.draft.whatsappIntentUrl,
@@ -295,7 +299,15 @@ export default function AppPage() {
 
         // Trigger immediate redirect to WhatsApp if requested
         if (directOpen && data.draft.whatsappUrl) {
-          window.open(data.draft.whatsappUrl, '_blank', 'noopener,noreferrer');
+          const opened = window.open(data.draft.whatsappUrl, '_blank', 'noopener,noreferrer');
+          if (opened) {
+            setStatusMessage(`Redirecting to WhatsApp (${data.draft.clientPhone || '9494899378'})...`);
+          } else {
+            // Popup blocker intercepted, prompt user to tap the prominent button in the open modal
+            setStatusMessage(`WhatsApp nudge ready! Tap "Open in WhatsApp" in the dialog.`);
+          }
+        } else {
+          setStatusMessage(`WhatsApp nudge preview generated (${effectiveTone} tone).`);
         }
       } else {
         const errorMsg = data?.message || data?.error || 'Failed to compose nudge';
@@ -326,9 +338,10 @@ export default function AppPage() {
     }
   };
 
-  const handleBulkNudge = () => {
+  const handleBulkNudge = async () => {
     if (selectedClients.length === 0) return;
-    setStatusMessage(`Dispatched bulk ${selectedTone} WhatsApp reminders to ${selectedClients.length} client(s).`);
+    setStatusMessage(`Triggering WhatsApp reminder for ${selectedClients.length} client(s)...`);
+    await handleTriggerNudge('proj-verma', selectedTone, true);
   };
 
   const formatPaise = (paiseStr: string | number | bigint) => {
@@ -2088,6 +2101,19 @@ export default function AppPage() {
                     <Send className="h-3.5 w-3.5" />
                     <span>Open in WhatsApp</span>
                   </a>
+                )}
+                {nudgeModal.whatsappUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatusMessage('Redirecting page directly to WhatsApp...');
+                      window.location.href = nudgeModal.whatsappUrl!;
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/50 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-200 px-3 py-2 text-xs font-semibold transition cursor-pointer"
+                    title="Redirect current tab directly to WhatsApp (immune to pop-up blockers)"
+                  >
+                    <span>Direct Redirect</span>
+                  </button>
                 )}
                 {nudgeModal.whatsappIntentUrl && (
                   <a

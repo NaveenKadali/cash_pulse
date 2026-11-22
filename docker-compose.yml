@@ -1,0 +1,68 @@
+name: cashpulse
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database Service
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: cashpulse-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cashpulse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cashpulse_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-cashpulse}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - cashpulse_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cashpulse} -d ${POSTGRES_DB:-cashpulse}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cashpulse-network
+
+  # ---------------------------------------------------------------------------
+  # CashPulse Next.js Application Service
+  # ---------------------------------------------------------------------------
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cashpulse-app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER:-cashpulse}:${POSTGRES_PASSWORD:-cashpulse_secret}@db:5432/${POSTGRES_DB:-cashpulse}
+      TEST_DATABASE_URL: postgres://${POSTGRES_USER:-cashpulse}:${POSTGRES_PASSWORD:-cashpulse_secret}@db:5432/${POSTGRES_DB:-cashpulse}_test
+      FAST2SMS_API_KEY: ${FAST2SMS_API_KEY:-}
+      FAST2SMS_ROUTE: ${FAST2SMS_ROUTE:-otp}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/api/dashboard/summary"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - cashpulse-network
+
+# -----------------------------------------------------------------------------
+# Volumes & Networks
+# -----------------------------------------------------------------------------
+volumes:
+  cashpulse_pgdata:
+    name: cashpulse_pgdata
+
+networks:
+  cashpulse-network:
+    name: cashpulse-network
+    driver: bridge
