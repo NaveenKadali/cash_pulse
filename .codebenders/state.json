@@ -1,7 +1,28 @@
 {
   "schemaVersion": 2,
   "createdAt": "2026-11-21T22:40:14.145Z",
-  "updatedAt": "2026-11-21T22:40:14.145Z",
-  "phases": {},
-  "settings": {}
+  "updatedAt": "2026-11-22T09:47:07.383Z",
+  "phases": {
+    "prd": {
+      "updatedAt": "2026-11-22T09:46:02.812Z",
+      "committed": true
+    },
+    "persona": {
+      "updatedAt": "2026-11-22T09:47:07.383Z",
+      "committed": false
+    }
+  },
+  "settings": {},
+  "flow": {
+    "prd": {
+      "hash": "381df705e0785a67",
+      "builtFrom": {}
+    },
+    "persona": {
+      "hash": "c3c332cd2d6cc2a0",
+      "builtFrom": {
+        "prd": "381df705e0785a67"
+      }
+    }
+  }
 }

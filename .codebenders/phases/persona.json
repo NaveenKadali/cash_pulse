@@ -1,0 +1,16 @@
+{
+  "personas": [
+    {
+      "persona_id": "P-A08D6D",
+      "name": "Back-Office Operator",
+      "short_description": "Tracks cash flow and runs day-to-day back-office operations for the business in CashPulse.",
+      "key_responsibilities": [
+        "Track cash flow",
+        "Manage back-office operations",
+        "Review incoming and outgoing cash positions",
+        "Monitor cash-flow trends and forecasts",
+        "Process and reconcile back-office tasks"
+      ]
+    }
+  ]
+}
