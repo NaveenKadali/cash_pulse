@@ -3,6 +3,10 @@
 export interface AppConfig {
   readonly databaseUrl: string;
   readonly nodeEnv: string;
+  readonly twoFactorApiKey?: string;
+  readonly fast2smsApiKey?: string;
+  readonly fast2smsRoute?: string;
+  readonly smsProvider?: string;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
@@ -26,5 +30,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   return {
     databaseUrl,
     nodeEnv: env['NODE_ENV'] ?? 'development',
+    twoFactorApiKey: env['TWOFACTOR_API_KEY'],
+    fast2smsApiKey: env['FAST2SMS_API_KEY'],
+    fast2smsRoute: env['FAST2SMS_ROUTE'] ?? 'otp',
+    smsProvider: env['SMS_PROVIDER'] ?? (env['TWOFACTOR_API_KEY'] ? '2factor' : 'fast2sms'),
   };
 }
